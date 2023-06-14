@@ -42,16 +42,17 @@
 #pagination a {display:inline-block;margin-right:10px;}
 #pagination .on {font-weight: bold; cursor: default;color:#777;}
 #placeLocation {
-	border : 1px black solid;
 	width : 500px;
-	height : 500px;
+	height : auto;
 }
 div .location {
 	border : 1px black solid;
 	width : 450px;
 	height : 100px;
-	padding : 5px;
-	margin : 5px;
+	padding : 10px;
+	margin : 15px;
+	margin-bottom : 30px;
+	border-radius : 30px;
 	transition: all 0.3s ease-in-out;
     position: relative;
     z-index: 1;
@@ -248,6 +249,10 @@ function getListItem(index, places) {
 // 	    			 "</div>";
 // 	    			 console.log(places)
 // 	    	placeLocation.innerHTML += location;
+
+			location.addEventListener('click', function(){
+				location.href=places.place_url;
+			});
     	} else {
     		return false;
     	}
@@ -292,11 +297,6 @@ function drop(ev) {
 	    	  allLocations.forEach(function (location, index) {
 	    	    if (location !== draggedElement) {
 	    	      var transformValue = 0;
-	    	      if (index < draggedIndex) {
-	    	        transformValue = draggedElement.offsetHeight;
-	    	      } else {
-	    	        transformValue = -draggedElement.offsetHeight;
-	    	      }
 	    	      location.style.transform = 'translateY(' + transformValue + 'px)';
 	    	    }
 	    	  });
