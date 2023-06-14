@@ -41,10 +41,20 @@
 #pagination {margin:10px auto;text-align: center;}
 #pagination a {display:inline-block;margin-right:10px;}
 #pagination .on {font-weight: bold; cursor: default;color:#777;}
-div .location {
+#placeLocation {
 	border : 1px black solid;
 	width : 500px;
-	height : 150px;
+	height : 500px;
+}
+div .location {
+	border : 1px black solid;
+	width : 450px;
+	height : 100px;
+	padding : 5px;
+	margin : 5px;
+	transition: all 0.3s ease-in-out;
+    position: relative;
+    z-index: 1;
 }
 </style>
 </head>
@@ -66,7 +76,7 @@ div .location {
         <div id="pagination"></div>
     </div>
 </div>
-<div id="placeLocation"></div>
+<div id="placeLocation" ondrop='drop(event)' ondragover='allowDrop(event)'></div>
 
 <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=917c14ec538dd01b6e336a6f65cec511&libraries=services"></script>
 <script>
@@ -216,17 +226,28 @@ function getListItem(index, places) {
     // 검색하고 div 추가
     el.addEventListener('click', function () {
     	if(confirm("추가 하시겠습니까?")) {
-	    	var location = "<div class='location' ondrop='drop(event)' ondragover='allowDrop(event)'>";
-	    	location += "<div id='"+ places.id +"' ondragstart='drag(event)' draggable='true'>" + 
-	    				places.place_name + "<br/>" +
-	    				places.category_group_name + "<br/>" +
-// 	    				places.category_name + "<br/>" +
-	    				places.phone + "<br/>" +
-	    				places.x + "<br/>" +
-	    				places.y + "<br/>" +
-	    			 "</div></div>";
-	    			 console.log(places)
-	    	placeLocation.innerHTML += location;
+	    	var location = document.createElement('div');
+	    	location.className = 'location';
+	    	location.id = places.id;
+	    	location.draggable = true;
+	    	location.addEventListener('dragstart', drag);
+	    	
+	    	var placeInfo = document.createElement('p');
+	    	placeInfo.innerHTML = places.place_name + "<br/>";
+	    	placeInfo.innerHTML += places.category_group_name + "<br/>";
+	    	placeInfo.innerHTML += places.phone;
+	    	location.appendChild(placeInfo);
+	    	placeLocation.appendChild(location);
+	    	
+// 	    	location += "<div class='location' id='"+ places.id +"' ondragstart='drag(event)' draggable='true'>" + 
+// 	    				places.place_name + "<br/>" +
+// 	    				places.category_group_name + "<br/>" +
+// 	    				places.phone + "<br/>" +
+// 	    				places.x + "<br/>" +
+// 	    				places.y + "<br/>" +
+// 	    			 "</div>";
+// 	    			 console.log(places)
+// 	    	placeLocation.innerHTML += location;
     	} else {
     		return false;
     	}
@@ -246,10 +267,46 @@ function drag(ev) {
 
 // 드래그 완료
 function drop(ev) {
-	ev.preventDefault();
-	var data = ev.dataTransfer.getData("text");
-	ev.target.appendChild(document.getElementById(data));
+	  ev.preventDefault();
+	    var data = ev.dataTransfer.getData("text");
+	    var draggedElement = document.getElementById(data);
+	    var targetElement = ev.target;
+
+	    // 드롭 위치가 .location 요소 내부인 경우
+	    if (targetElement.classList.contains("location")) {
+	      targetElement.parentNode.insertBefore(draggedElement, targetElement);
+	    }
+	    // 드롭 위치가 .location 요소 외부인 경우
+	    else {
+	      // 드롭 위치가 빈 공간인 경우에만 삽입
+	      if (targetElement.id === "placeLocation") {
+	        ev.target.appendChild(draggedElement);
+	      }
+	    }
+	  var allLocations = document.querySelectorAll('.location');
+	    allLocations.forEach(function (location) {
+	      location.style.transform = '';
+	    });
+
+	    requestAnimationFrame(function () {
+	    	  allLocations.forEach(function (location, index) {
+	    	    if (location !== draggedElement) {
+	    	      var transformValue = 0;
+	    	      if (index < draggedIndex) {
+	    	        transformValue = draggedElement.offsetHeight;
+	    	      } else {
+	    	        transformValue = -draggedElement.offsetHeight;
+	    	      }
+	    	      location.style.transform = 'translateY(' + transformValue + 'px)';
+	    	    }
+	    	  });
+	    	});
+	    // 드래그된 요소의 자리 유지
+	    draggedElement.style.position = 'relative';
+	    draggedElement.style.transform = 'translateY(0px)';
+	    draggedElement.style.zIndex = '2';
 }
+
 
 // 마커를 생성하고 지도 위에 마커를 표시하는 함수입니다
 function addMarker(position, idx, title) {
